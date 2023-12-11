@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "name": "@survicate/survicate-web-surveys-wrapper",
+  "description": "Public Survicate web surveys wrapper",
+  "author": {
+    "name": "Survicate",
+    "email": "help@survicate.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Survicate/survicate-web-surveys-wrapper.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Survicate/survicate-web-surveys-wrapper/issues"
+  },
+  "main": "widget_wrapper.js",
+  "types": "types.d.ts"
+}
