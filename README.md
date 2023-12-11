@@ -3,7 +3,7 @@ It's built on top of [Preact](https://github.com/preactjs/preact) using [Typescr
 
 # Installation
 
-`npm install @survicate/survicate-web-public-package --save`
+`npm install @survicate/survicate-web-surveys-wrapper --save`
 
 # Initialization
 
@@ -15,7 +15,7 @@ Initialize Survicate using `initSurvicate`
 
 
 ```javascript
-import { initSurvicate, getSurvicateInstance, ApiEvent } from '@survicate/survicate-web-public-package/widget_wrapper';
+import { initSurvicate, getSurvicateInstance, ApiEvent } from '@survicate/survicate-web-surveys-wrapper/widget_wrapper';
 
   const config = { workspaceKey: 'workspace key' };
 
@@ -42,8 +42,8 @@ Usage in React:
 
 ```jsx
 //Main component
-import { getSurvicateInstance, initSurvicate } from '@survicate/survicate-web-public-package/widget_wrapper';
-import { Survicate } from '@survicate/survicate-web-public-package';
+import { getSurvicateInstance, initSurvicate } from '@survicate/survicate-web-surveys-wrapper/widget_wrapper';
+import { Survicate } from '@survicate/survicate-web-surveys-wrapper';
 
 function App() {
   const [survicate, setSurvicate] = useState<Survicate | null>(null);
@@ -66,8 +66,8 @@ function App() {
 export default App;
 
 //Child component
-import { Survicate } from '@survicate/survicate-web-public-package';
-import { ApiEvent } from '@survicate/survicate-web-public-package/widget_wrapper';
+import { Survicate } from '@survicate/survicate-web-surveys-wrapper';
+import { ApiEvent } from '@survicate/survicate-web-surveys-wrapper/widget_wrapper';
 
 interface Props {
   survicate: Survicate | null;
@@ -96,7 +96,7 @@ useEffect(() => {
 To call available methods:
 
 ```jsx
-import  { getSurvicateInstance , ApiEvent } from '@survicate/survicate-web-public-package/widget_wrapper';
+import  { getSurvicateInstance , ApiEvent } from '@survicate/survicate-web-surveys-wrapper/widget_wrapper';
 
 //Initialize survicate, then use:
 const survicate = getSurvicateInstance();
