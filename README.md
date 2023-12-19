@@ -1,3 +1,5 @@
+# Survicate Web Surveys Wrapper
+
 This package is a wrapper which allows you to install the Survicate tracking code and use API methods directly in your code.
 It's built on top of [Preact](https://github.com/preactjs/preact) using [Typescript](https://github.com/Microsoft/TypeScript)
 
@@ -101,17 +103,8 @@ import  { getSurvicateInstance , ApiEvent } from '@survicate/survicate-web-surve
 //Initialize survicate, then use:
 const survicate = getSurvicateInstance();
 
-// Show survey with force option
-survicate.showSurvey('9d4f6e44ddabb6fe', { forceDisplay: true });
-
 // Set user attributes
 survicate.setVisitorTraits({newName: 'newName', newEmail: 'newEmail'});
-
-// Add event listener
-survicate.addEventListener(ApiEvent.questionAnswered , () => console.log('question answered'));
-
-// Remove eventListener
-survicate.removeEventListener(ApiEvent.questionAnswered);
 
 ```
 *Please refer to the [documentation](https://developers.survicate.com/javascript/methods/) for the rest of the methods.*

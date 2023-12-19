@@ -41,4 +41,5 @@ export declare class Survicate {
 	destroyVisitor(callback?: () => void): void;
 	addEventListener(event: ApiEvent, callback: CallbackTypes): number | void;
 	removeEventListener(eventId: number | ApiEvent): void;
+	invokeEvent: (eventName: string, eventProperties?: Record<string, any>) => void;
 }
