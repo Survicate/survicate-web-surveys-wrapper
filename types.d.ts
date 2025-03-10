@@ -2,19 +2,14 @@ import type { ApiEvent, AppearMethod } from './widget_wrapper';
 
 export enum SurveyType {
   WidgetSurvey = 'WidgetSurvey',
-  PageSurvey = 'PageSurvey',
-  MobileSurvey = 'MobileSurvey',
   FeedbackButton = 'FeedbackButton',
-  IntercomSurvey = 'IntercomSurvey'
 }
 
 export interface ConfigModel {
   workspaceKey: string;
-  traits?: {
-  [key: string]: string;
-  };
+  traits?: {[key: string]: string;};
   disableTargeting?: true;
-  disableSensitiveDataPersistence?: boolean;
+  disableSensitiveDataPersistence?: true;
   nonce?: string;
 }
 
