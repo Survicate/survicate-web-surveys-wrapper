@@ -17,8 +17,8 @@ export interface ShowSurveyOptions {
   forceDisplay?: true;
   displayMethod?: AppearMethod;
   displayOptions?: {
-  delay?: number;
-  scrolledPercentage?: number;
+		delay?: number;
+		scrolledPercentage?: number;
   };
 }
 
