@@ -161,6 +161,8 @@ export interface ConfigModel {
   disableTargeting?: true;
   /** Disable persistence of sensitive visitor data */
   disableSensitiveDataPersistence?: boolean;
+  /** Force surveys to display in a specific language (IETF language tag, e.g., "en", "fr", "pt-BR") */
+  forcedLanguage?: string;
   /** Array of survey IDs to hide from targeting */
   hiddenSurveys?: string[];
   /** Content Security Policy nonce for script injection */
@@ -238,6 +240,40 @@ export interface SurveyApi {
   getVisitorId: (surveyType?: SurveyType) => string;
 
   /**
+   * Get the response UUID for the current survey session
+   *
+   * This method returns the unique identifier for the current survey response.
+   * When connectResponse is true:
+   * - If an active survey exists with answers being collected, returns the survey's existing response UUID
+   * - If no active survey exists, generates a new UUID (not stored)
+   * When connectResponse is false or undefined, generates a new UUID each time.
+   *
+   * Note: The survey state response UUID is only available when there's already an active survey
+   * with answers being collected. For programmatic submissions without an active survey,
+   * you should generate a UUID once and reuse it across multiple submitAnswer calls.
+   *
+   * @example
+   * ```javascript
+   * // Safest way: Get response UUID after a question is answered (ensures active survey)
+   * window._sva?.addEventListener('question_answered', function(surveyId, questionId) {
+   *   if (surveyId === 'ab1791b79cacc6ba' && questionId === 1332422) {
+   *     const responseUuid = window._sva?.getResponseUuid('WidgetSurvey', true);
+   *
+   *     window._sva?.submitAnswer(
+   *       { surveyId: 'ab1791b79cacc6ba', pointId: 1332423, answer: 'this was submitted by API' },
+   *       responseUuid
+   *     );
+   *   }
+   * });
+   * ```
+   *
+   * @param surveyType - The survey type (WidgetSurvey or FeedbackButton) to get the response UUID for
+   * @param connectResponse - If true, returns existing response UUID from active survey, otherwise generates new UUID
+   * @returns Response UUID string
+   */
+  getResponseUuid: (surveyType: SurveyType, connectResponse?: boolean) => string;
+
+  /**
    * Get metadata about survey points (questions)
    *
    * This method returns information about all questions in a survey,
@@ -267,6 +303,31 @@ export interface SurveyApi {
   retarget: () => void;
 
   /**
+   * Force the survey language to a specific IETF language tag
+   *
+   * This method overrides all automatic language detection methods (URL parameters,
+   * path segments, TLD, and browser language). The language will be applied to all
+   * surveys until explicitly changed or cleared.
+   *
+   * The argument must be a valid IETF language tag such as:
+   * - A two-letter ISO 639 code (e.g., "en", "fr")
+   * - A three-letter code for languages without the two-letter equivalent (e.g., "haw", "yue")
+   * - A language tag with region (e.g., "en-US", "pt-BR")
+   *
+   * @param languageTag - IETF language tag to force for all surveys
+   *
+   * @example
+   * ```javascript
+   * // Force surveys to display in French
+   * window._sva?.setSurveyLanguage('fr');
+   *
+   * // Force surveys to display in Brazilian Portuguese
+   * window._sva?.setSurveyLanguage('pt-BR');
+   * ```
+   */
+  setSurveyLanguage: (languageTag: string) => void;
+
+  /**
    * Set visitor traits/attributes for targeting and identification
    * @param attributes - Object containing visitor attributes
    */
@@ -288,6 +349,10 @@ export interface SurveyApi {
    * without user interaction, useful for integrations or testing.
    *
    * @param params - Object containing survey, point, and answer information
+   * @param responseUuid - Optional response UUID to use for this answer submission.
+   * If provided and valid, reuses the existing response UUID, otherwise generates a new one.
+   * Useful when a survey is partially shown with some questions hidden, or when you want to
+   * connect all answers into a single record in the analysis tab.
    */
   submitAnswer: (params: {
     /** Survey ID */
@@ -298,7 +363,7 @@ export interface SurveyApi {
     answerId?: number;
     /** Answer value (for text or numeric questions) */
     answer?: string | number;
-  }) => void;
+  }, responseUuid?: string) => void;
 
   /** Current visitor traits/attributes */
   traits?: VisitorAttributes;
@@ -370,6 +435,48 @@ export declare class Survicate {
   getVisitorId: (surveyType?: SurveyType) => string;
 
   /**
+   * Get the response UUID for the current survey session
+   *
+   * This method returns the unique identifier for the current survey response.
+   * When connectResponse is true:
+   * - If an active survey exists with answers being collected, returns the survey's existing response UUID
+   * - If no active survey exists, generates a new UUID (not stored)
+   * When connectResponse is false or undefined, generates a new UUID each time.
+   *
+   * Note: The survey state response UUID is only available when there's already an active survey
+   * with answers being collected. For programmatic submissions without an active survey,
+   * you should generate a UUID once and reuse it across multiple submitAnswer calls.
+   *
+   * @example
+   * ```javascript
+   * // Safest way: Get response UUID after a question is answered (ensures active survey)
+   * survicate.addEventListener('question_answered', function(surveyId, questionId) {
+   *   if (surveyId === 'ab1791b79cacc6ba' && questionId === 1332422) {
+   *     const responseUuid = survicate.getResponseUuid(Survicate.SurveyType.WidgetSurvey, true);
+   *
+   *     survicate.submitAnswer(
+   *       { surveyId: 'ab1791b79cacc6ba', pointId: 1332423, answer: 'this was submitted by API' },
+   *       responseUuid
+   *     );
+   *   }
+   * });
+   *
+   * // Alternative: Get a new response UUID (generates new UUID each time)
+   * const responseUuid = survicate.getResponseUuid(Survicate.SurveyType.WidgetSurvey);
+   *
+   * // For programmatic submissions without active survey, generate UUID once and reuse it
+   * const responseUuid = survicate.getResponseUuid(Survicate.SurveyType.WidgetSurvey);
+   * survicate.submitAnswer({ surveyId: 'survey-1', pointId: 1, answerId: 5 }, responseUuid);
+   * survicate.submitAnswer({ surveyId: 'survey-1', pointId: 2, answerId: 3 }, responseUuid);
+   * ```
+   *
+   * @param surveyType - The survey type (WidgetSurvey or FeedbackButton) to get the response UUID for
+   * @param connectResponse - If true, returns existing response UUID from active survey, otherwise generates new UUID
+   * @returns Response UUID string
+   */
+  getResponseUuid: (surveyType: SurveyType, connectResponse?: boolean) => string;
+
+  /**
    * Set visitor traits/attributes for targeting and identification
    *
    * @param attributes - Object containing visitor attributes
@@ -438,9 +545,20 @@ export declare class Survicate {
    *   pointId: 3,
    *   answer: 9 // Score from 0-10
    * });
+   *
+   * // Submit an answer with a specific response UUID
+   * survicate.submitAnswer({
+   *   surveyId: 'survey-123',
+   *   pointId: 4,
+   *   answerId: 2
+   * }, '550e8400-e29b-41d4-a716-446655440000');
    * ```
    *
    * @param params - Object containing survey, point, and answer information
+   * @param responseUuid - Optional response UUID to use for this answer submission.
+   * If provided and valid, reuses the existing response UUID, otherwise generates a new one.
+   * Useful when a survey is partially shown with some questions hidden, or when you want to
+   * connect all answers into a single record in the analysis tab.
    * @throws Will log warnings for invalid parameters or rate limit exceeded
    */
   submitAnswer: (params: {
@@ -449,10 +567,10 @@ export declare class Survicate {
     /** Question/point ID */
     pointId: number;
     /** Answer option ID (for single choice questions) */
-    answerId: number;
+    answerId?: number;
     /** Answer value (for text or numeric questions) */
-    answer: string | number;
-  }) => void;
+    answer?: string | number;
+  }, responseUuid?: string) => void;
 
   /**
    * Get metadata about survey points (questions)
