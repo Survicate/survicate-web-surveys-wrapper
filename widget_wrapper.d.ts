@@ -235,6 +235,13 @@ export interface SurveyApi {
   addEventListener: (event: ApiEvent, callback: CallbackTypes) => number | void;
 
   /**
+   * Close the currently displayed survey (widget or feedback).
+   * Fires the same close flow as when the user clicks the close button, including survey_closed event and integrations.
+   * @param surveyId - Optional. If provided, only the survey with that ID is closed (if open). If omitted, all open surveys are closed. Use survey ID for multiple widgets on one site.
+   */
+  closeSurvey: (surveyId?: string) => void;
+
+  /**
    * Destroy the current visitor session and reset all data
    * @param callback - Optional callback to execute after destruction
    */
