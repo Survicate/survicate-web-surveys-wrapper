@@ -1,0 +1,7 @@
+.env*
+node_modules/
+*.tgz
+test-e2e-prod/
+survi-next/
+survi-ssr/
+survicate-web-package/

@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0",
+  "version": "1.7.1",
   "name": "@survicate/survicate-web-surveys-wrapper",
   "description": "Public Survicate web surveys wrapper",
   "author": {
@@ -15,5 +15,10 @@
     "url": "https://github.com/Survicate/survicate-web-surveys-wrapper/issues"
   },
   "main": "widget_wrapper.js",
-  "types": "types.d.ts"
+  "types": "widget_wrapper.d.ts",
+  "files": [
+    "widget_wrapper.js",
+    "widget_wrapper.d.ts",
+    "README.md"
+  ]
 }

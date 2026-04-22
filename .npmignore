@@ -1,0 +1,10 @@
+# Defense-in-depth: the "files" field in package.json is the primary guard.
+# This file is a secondary safeguard against accidental publishes of sensitive data.
+.env*
+.git/
+.github/
+test-*
+survi-*
+survicate-web-package/
+node_modules/
+*.tgz
