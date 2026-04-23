@@ -1,0 +1,37 @@
+name: Publish to NPM
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to publish from'
+        required: false
+        default: 'development'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Safety check
+        run: |
+          pack_output="$(npm pack --dry-run --ignore-scripts 2>&1)"
+          printf '%s\n' "$pack_output"
+          pack_files="$(printf '%s\n' "$pack_output" | grep '^npm notice ' | grep -vE '(Tarball Details|Tarball Contents|name:|version:|filename:|package size:|unpacked size:|shasum:|integrity:|total files:)' || true)"
+          if printf '%s\n' "$pack_files" | grep -qiE '\.env|credentials|secret|\.pem|\.key|\.npmrc|id_rsa|id_ed25519'; then
+            echo "::error::Sensitive files detected in npm package! Aborting."
+            exit 1
+          fi
+
+      - name: Publish
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
