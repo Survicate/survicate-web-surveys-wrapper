@@ -26,6 +26,14 @@ jobs:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Check version not already published
+        run: |
+          VERSION=$(jq -r .version package.json)
+          if git ls-remote --tags origin | grep -q "refs/tags/v${VERSION}$"; then
+            echo "::error::Tag v${VERSION} already exists. Bump the version in package.json first."
+            exit 1
+          fi
+
       - name: Safety check
         run: |
           pack_output="$(npm pack --dry-run --ignore-scripts 2>&1)"
@@ -48,10 +56,14 @@ jobs:
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NOTES: ${{ github.event.inputs.release_notes }}
         run: |
           VERSION=$(jq -r .version package.json)
           git tag "v${VERSION}"
           git push origin "v${VERSION}"
+          notes_file="$(mktemp)"
+          trap 'rm -f "$notes_file"' EXIT
+          printf '%s' "$RELEASE_NOTES" > "$notes_file"
           gh release create "v${VERSION}" \
             --title "v${VERSION}" \
-            --notes "${{ github.event.inputs.release_notes }}"
+            --notes-file "$notes_file"
