@@ -7,10 +7,15 @@ on:
         description: 'Branch or tag to publish from'
         required: false
         default: 'development'
+      release_notes:
+        description: 'Short release description'
+        required: true
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v6
         with:
@@ -25,13 +30,28 @@ jobs:
         run: |
           pack_output="$(npm pack --dry-run --ignore-scripts 2>&1)"
           printf '%s\n' "$pack_output"
-          pack_files="$(printf '%s\n' "$pack_output" | grep '^npm notice ' | grep -vE '(Tarball Details|Tarball Contents|name:|version:|filename:|package size:|unpacked size:|shasum:|integrity:|total files:)' || true)"
-          if printf '%s\n' "$pack_files" | grep -qiE '\.env|credentials|secret|\.pem|\.key|\.npmrc|id_rsa|id_ed25519'; then
+          pack_files="$(printf '%s\n' "$pack_output" \
+            | grep '^npm notice ' \
+            | grep -vE '(Tarball Details|Tarball Contents|name:|version:|filename:|package size:|unpacked size:|shasum:|integrity:|total files:)' \
+            | sed -E 's/^npm notice[[:space:]]+([0-9.]+[kKMGT]?B[[:space:]]+)?//' \
+            || true)"
+          if printf '%s\n' "$pack_files" | grep -qiE '(^|/)\.env(\.[^/]+)?$|(^|/)\.npmrc$|(^|/)(id_rsa|id_ed25519)$|(^|/)[^/]+\.(pem|key)$|(^|/)(credentials|secret|secrets)(\.(json|ya?ml|env|txt))?$'; then
             echo "::error::Sensitive files detected in npm package! Aborting."
             exit 1
           fi
 
       - name: Publish
-        run: npm publish
+        run: npm publish --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(jq -r .version package.json)
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}"
+          gh release create "v${VERSION}" \
+            --title "v${VERSION}" \
+            --notes "${{ github.event.inputs.release_notes }}"
