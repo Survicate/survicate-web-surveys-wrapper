@@ -34,14 +34,18 @@ jobs:
         run: |
           set -o pipefail
           VERSION=$(jq -r .version package.json)
-          if git ls-remote --tags origin | grep -q "refs/tags/v${VERSION}$"; then
+          if git ls-remote --exit-code --tags --refs origin "refs/tags/v${VERSION}" >/dev/null 2>&1; then
             echo "::error::Tag v${VERSION} already exists. Bump the version in package.json first."
             exit 1
           fi
 
       - name: Safety check
         run: |
-          pack_output="$(npm pack --dry-run --ignore-scripts 2>&1)"
+          pack_output="$(npm pack --dry-run --ignore-scripts 2>&1)" || {
+            echo "::error::npm pack failed:"
+            printf '%s\n' "$pack_output"
+            exit 1
+          }
           printf '%s\n' "$pack_output"
           pack_files="$(printf '%s\n' "$pack_output" \
             | grep '^npm notice ' \
@@ -53,16 +57,16 @@ jobs:
             exit 1
           fi
 
+      - name: Publish
+        run: npm publish --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Create git tag
         run: |
           VERSION=$(jq -r .version package.json)
           git tag "v${VERSION}"
           git push origin "v${VERSION}"
-
-      - name: Publish
-        run: npm publish --ignore-scripts
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub release
         env:
