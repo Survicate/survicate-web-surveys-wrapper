@@ -176,6 +176,11 @@ export interface ConfigModel {
   disableSensitiveDataPersistence?: boolean;
   /** Force surveys to display in a specific language (IETF language tag, e.g., "en", "fr", "pt-BR") */
   forcedLanguage?: string;
+  /**
+   * Use the page's `<html lang>` attribute as a language detection source (checked before URL and browser language).
+   * Opt-in only: passing `false` does not clear a value already set on `window._sva.useHtmlLangAttribute`.
+   */
+  useHtmlLangAttribute?: boolean;
   /** Force initial theme mode: "light", "dark", or "auto" (follow system). Same as setThemeMode() but applied on init */
   themeMode?: string;
   /** Array of survey IDs to hide from targeting */
@@ -237,7 +242,8 @@ export interface SurveyApi {
   /**
    * Close the currently displayed survey (widget or feedback).
    * Fires the same close flow as when the user clicks the close button, including survey_closed event and integrations.
-   * @param surveyId - Optional. If provided, only the survey with that ID is closed (if open). If omitted, all open surveys are closed. Use survey ID for multiple widgets on one site.
+   * @param surveyId - Optional. If provided, only the survey with that ID is closed (if open).
+   * If omitted, all open surveys are closed. Use survey ID for multiple widgets on one site.
    */
   closeSurvey: (surveyId?: string) => void;
 
